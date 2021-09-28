@@ -91,6 +91,9 @@ class Election(models.Model):
     email_losers = models.BooleanField(
         default=False
     )
+    verify_candidate_emails = models.BooleanField(
+        default=False
+    )
     winner_message = models.TextField(
         help_text='The message to send to successful candidates in an election.'
         ' Format the message by using {name} for the candidate name, {position}'
@@ -104,6 +107,14 @@ class Election(models.Model):
         'election. Format the message by using {name} for the candidate name, '
         '{position} for the title of the position, and {votes} for the number '
         'of votes they received',
+        blank=True,
+        null=True
+    )
+    candidate_verification_email = models.TextField(
+        help_text='The message to send to candidates to verify their email in '
+        'an election. Format the message by using {name} for the candidate '
+        'name, {position} for the title of the position, and {verify_url} for '
+        'the link to verify their email',
         blank=True,
         null=True
     )
