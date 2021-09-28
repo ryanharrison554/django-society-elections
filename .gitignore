@@ -133,3 +133,6 @@ dmypy.json
 
 # Ignore dev folder
 dev/
+
+src/manage.py
+src/__init__.py
