@@ -57,7 +57,9 @@ class Election(models.Model):
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         models.PROTECT,
-        editable=False
+        editable=False,
+        related_name='elections_created',
+        related_query_name='election_created'
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -127,7 +129,9 @@ class Election(models.Model):
         on_delete=models.PROTECT,
         null=True,
         blank=True,
-        editable=False
+        editable=False,
+        related_name='elections_finished',
+        related_query_name='election_finished'
     )
     results_submitted_at = models.DateTimeField(
         blank=True,
@@ -187,11 +191,11 @@ class ElectionPosition(models.Model):
             applying for this position 
     """
     position = models.ForeignKey(
-        to=f'{SocietyElectionsConfig.name}.Position',
+        to=f'{SocietyElectionsConfig.name}.{Position.__name__}',
         on_delete=models.CASCADE
     )
     election = models.ForeignKey(
-        to=f'{SocietyElectionsConfig.name}.Election',
+        to=f'{SocietyElectionsConfig.name}.{Election.__name__}',
         on_delete=models.CASCADE,
         related_name='positions',
         related_query_name='position'
@@ -281,7 +285,7 @@ class Voter(models.Model):
         editable=False
     )
     election = models.ForeignKey(
-        to=f'{SocietyElectionsConfig}.{Election.__name__}',
+        to=f'{SocietyElectionsConfig.name}.{Election.__name__}',
         on_delete=models.CASCADE,
         related_name='voters',
         related_query_name='voter'
