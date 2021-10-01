@@ -36,6 +36,14 @@ class Candidate(models.Model):
         auto_now_add=True,
         editable=False
     )
+    email_uuid = models.UUIDField(
+        null=True,
+        blank=True,
+        editable=False
+    ) # Only required if necessary to validate candidate email
+    email_verified = models.BooleanField(
+        default=False
+    )
 
     def __str__(self):
         return f'{self.full_name} for {self.position.position}'
