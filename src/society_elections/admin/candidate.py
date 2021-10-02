@@ -1,6 +1,7 @@
 from logging import getLogger
 
 from django.contrib import admin
+from django.db.models.query import QuerySet
 from django.http import HttpRequest
 from django.utils.decorators import method_decorator
 
@@ -28,3 +29,22 @@ class CandidateAdmin(admin.ModelAdmin):
         form (django.forms.ModelForm): Which form to use for the model
     """
     form = CandidateAdminForm
+
+    @admin.action(description='Resend verification emails')
+    @method_decorator(log_model_admin_action(
+        'resend verification email', Candidate, logger
+    ))
+    def resend_verification_email_action(
+        self, request: HttpRequest, queryset: QuerySet
+    ):
+        """Regenerate UUID of selected candidates and resend email
+
+        Args:
+            request (HttpRequest): Request to server to perform action
+            queryset (QuerySet): Set of objects to perform action on
+        """
+        candidate: Candidate
+        for candidate in queryset:
+            candidate.email_uuid = None
+            candidate.save() # Regenerates UUID
+            candidate.send_verification_email()
