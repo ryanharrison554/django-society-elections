@@ -1,15 +1,25 @@
 from logging import getLogger
 
 from django.contrib import admin
+from django.utils.decorators import method_decorator
 from django.http import HttpRequest
 
 from ..forms import ElectionForm
 from ..models import Election
+from ..decorators import log_model_admin_action
 
 logger = getLogger(__name__)
 
 
 @admin.register(Election)
+@method_decorator(
+    log_model_admin_action('save', Election, logger),
+    name='save_model'
+)
+@method_decorator(
+    log_model_admin_action('delete', Election, logger),
+    name='delete_model'
+)
 class ElectionAdmin(admin.ModelAdmin):
     """Class defining how an Election model is presented in the admin interface
 
@@ -29,9 +39,6 @@ class ElectionAdmin(admin.ModelAdmin):
             obj (Election): Election object to save in database
         """
         if obj.pk is None:
-            logger.info(f'{request.user} creating election "{obj}"')
             obj.created_by = request.user
-        else:
-            logger.info(f'{request.user} updating election "{obj}"')
         super().save_model(request, obj, *args, **kwargs)
 
