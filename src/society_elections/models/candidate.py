@@ -85,7 +85,10 @@ class Candidate(models.Model):
         """Create a UUID for the verification email if required when saving for 
         the first time
         """
-        if self.pk is None and self.position.election.verify_candidate_email:
+        if (
+            self.email_uuid is None and
+            self.position.election.verify_candidate_email
+        ):
             self.email_uuid = uuid.uuid4()
         super().save(*args, **kwargs)
 
