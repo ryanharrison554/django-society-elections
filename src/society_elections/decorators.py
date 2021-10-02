@@ -2,6 +2,7 @@ import functools
 import logging
 from django.http import HttpRequest
 from django.db.models import Model
+from django.db.models.query import QuerySet
 
 def log_model_admin_action(
     action: str, 
@@ -36,7 +37,9 @@ def log_model_admin_action(
                 obj = my_kwargs['obj']
             else:
                 obj = my_args[1]
-            assert isinstance(obj, model)
+            # Translate to stringable if queryset
+            if isinstance(obj, QuerySet):
+                obj = [str(o) for o in obj]
 
             if logger is None:
                 my_logger = logging.getLogger(func.__module__)
