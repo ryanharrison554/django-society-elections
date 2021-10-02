@@ -14,6 +14,8 @@ class ElectionAdmin(admin.ModelAdmin):
     """Class defining how an Election model is presented in the admin interface
 
     Attributes:
+        date_hierarchy (str): How elections are grouped by date
+        form (django.forms.ModelForm): Which form to use for the model
     """
     date_hierarchy = 'nominations_start'
     form = ElectionForm
