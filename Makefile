@@ -6,3 +6,7 @@ build: migrations
 
 install: migrations
 	python setup.py install
+
+upload:
+	python setup.py sdist bdist_wheel
+	twine upload dist/*
