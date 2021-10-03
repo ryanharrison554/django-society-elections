@@ -29,6 +29,7 @@ class CandidateAdmin(admin.ModelAdmin):
         form (django.forms.ModelForm): Which form to use for the model
     """
     form = CandidateAdminForm
+    actions = ['resend_verification_email_action']
 
     @admin.action(description='Resend verification emails')
     @method_decorator(log_model_admin_action(
