@@ -60,7 +60,7 @@ class Candidate(models.Model):
         Only send a verification email if this has been configured in the 
         election settings.
         """
-        if self.position.election.verify_candidate_email:
+        if self.position.election.verify_candidate_emails:
             if self.email_uuid is None:
                 raise ValueError(
                     'UUID has not yet been set, cannot send verification email'
@@ -69,9 +69,9 @@ class Candidate(models.Model):
                 f'Verify Email for Nomination in {self.position.election}',
                 self.position.election.candidate_verification_email.format(
                     name=self.full_name,
-                    position=self.position.position,
+                    position=self.position.position.title,
                     verify_url=self.verify_url
-                )
+                ), None, [self.email,]
             )
 
 
@@ -79,8 +79,9 @@ class Candidate(models.Model):
     def verify_url(self) -> str:
         """str: URL to click to verify the email address of a candidate"""
         return (
-            f'{settings.ROOT_URL}/'
-            f'{reverse("candidate_verify", args=(self.email_uuid))}'
+            settings.ROOT_URL + reverse(
+                "candidate_verify", args=(self.email_uuid,)
+            )
         )
 
     
@@ -90,7 +91,7 @@ class Candidate(models.Model):
         """
         if (
             self.email_uuid is None and
-            self.position.election.verify_candidate_email
+            self.position.election.verify_candidate_emails
         ):
             self.email_uuid = uuid.uuid4()
         super().save(*args, **kwargs)
