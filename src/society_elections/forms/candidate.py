@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.forms import ModelForm
+from django.forms import ModelForm, Form
 
 from ..models import Candidate, Election, ElectionPosition
 
@@ -45,5 +45,6 @@ class NominationForm(BaseCandidateForm):
         fields = (
             'full_name',
             'email',
-            'position'
+            'position',
+            'manifesto'
         )

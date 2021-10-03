@@ -33,6 +33,9 @@ class Candidate(models.Model):
         max_length=128
     )
     email = models.EmailField()
+    manifesto = models.TextField(
+        help_text="Why you would be a good fit for the chosen position(s)"
+    )
     successful = models.BooleanField(
         default=False,
         editable=False
