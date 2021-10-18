@@ -35,7 +35,6 @@ class Voter(models.Model):
         related_name='voters',
         related_query_name='voter'
     )
-    email_salt = models.BinaryField()
     email_hash = models.BinaryField()
     verified = models.BooleanField(
         default=False,
