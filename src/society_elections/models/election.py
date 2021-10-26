@@ -39,6 +39,7 @@ class Election(models.Model):
             results
         results_submitted_at (datetime): When were the results finalised
         positions (object): one-to-many relation to ElectionPosition
+        anonymous (bool): Whether or not the votes should be anonymized
     """
     title = models.CharField(
         max_length=100
@@ -115,6 +116,11 @@ class Election(models.Model):
         blank=True,
         null=True
     )
+    voter_verification_email = models.TextField(
+        help_text='The message to send to voters to verify their email in the election. Format the message by using {email} for the voter\'s email address, and {verify_url} for the link to verify their email',
+        default='Click the link below or copy into your browser to verify your '
+        'email address:\n\n{verify_url}'
+    )
     results_submitted = models.BooleanField(
         default=False,
         editable=False
@@ -132,6 +138,9 @@ class Election(models.Model):
         blank=True,
         null=True,
         editable=False
+    )
+    anonymous = models.BooleanField(
+        default=True,
     )
 
     def __str__(self):

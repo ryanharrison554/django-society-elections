@@ -3,4 +3,4 @@ from .election import Election
 from .electionposition import ElectionPosition
 from .position import Position
 from .vote import Vote
-from .voter import Voter
+from .voter import AnonymousVoter, RegisteredVoter

@@ -3,7 +3,7 @@ from django.db import models
 from ..apps import SocietyElectionsConfig
 from .candidate import Candidate
 from .electionposition import ElectionPosition
-from .voter import Voter
+from .voter import AnonymousVoter, RegisteredVoter
 
 
 class Vote(models.Model):
@@ -11,7 +11,10 @@ class Vote(models.Model):
     RON/Abstain
 
     Attributes:
-        voter ({Voter.__name__}): Voter in the election
+        registered_voter ({RegisteredVoter.__name__}): Registered voter in the 
+            election if election is not anonymous
+        anonymous_voter ({AnonymousVoter.__name__}): Anonymous voter in the     
+            election if the election is anonymous
         candidate ({Candidate.__name__}): Candidate in the election
         position ({ElectionPosition.__name__}): The position being voted for
         ron (bool): Whether or not the voter voted to re-open nominations
@@ -20,10 +23,17 @@ class Vote(models.Model):
         vote_last_modified_at (datetime): Time the vote was last modified, 
             useful to understand if someone has changed their vote
     """
-    voter = models.ForeignKey(
-        to=f'{SocietyElectionsConfig.name}.{Voter.__name__}',
+    registered_voter = models.ForeignKey(
+        to=f'{SocietyElectionsConfig.name}.{RegisteredVoter.__name__}',
         on_delete=models.CASCADE,
-        editable=False
+        editable=False,
+        null=True
+    )
+    anonymous_voter = models.ForeignKey(
+        to=f'{SocietyElectionsConfig.name}.{AnonymousVoter.__name__}',
+        on_delete=models.CASCADE,
+        editable=False,
+        null=True
     )
     candidate = models.ForeignKey(
         to=f'{SocietyElectionsConfig.name}.{Candidate.__name__}',
@@ -59,5 +69,18 @@ class Vote(models.Model):
         editable=False
     )
 
+    @property
+    def is_anonymous(self) -> bool:
+        """bool:  True if election is anonymous, False otherwise"""
+        return self.position.election.anonymous
+
+    @property
+    def voter_str(self) -> str:
+        """str: String representation of the voter"""
+        if self.anonymous_voter is None:
+            return str(self.registered_voter)
+        else:
+            return f'Anonymous Voter {self.anonymous_voter}'
+
     def __str__(self):
-        return f'{self.voter} voting {self.candidate}'
+        return f'{self.voter_str} voting {self.candidate}'

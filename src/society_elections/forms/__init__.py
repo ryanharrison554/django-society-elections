@@ -1,3 +1,3 @@
 from .candidate import CandidateAdminForm, NominationForm
 from .election import ElectionForm
-from .voter import VoterForm
+from .voter import RegisteredVoterForm

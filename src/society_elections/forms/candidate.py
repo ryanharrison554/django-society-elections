@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.forms import ModelForm, Form
+from django.forms import ModelForm
 
 from ..models import Candidate, Election, ElectionPosition
 
