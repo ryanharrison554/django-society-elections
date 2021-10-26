@@ -1,5 +1,5 @@
 migrations:
-	python src/makemigrations.py
+	python src/manage.py makemigrations society_elections
 
 build: migrations
 	python setup.py build

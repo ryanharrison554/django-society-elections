@@ -130,9 +130,3 @@ dmypy.json
 
 # Ignore VScode
 .vscode/
-
-# Ignore dev folder
-dev/
-
-src/manage.py
-src/__init__.py
