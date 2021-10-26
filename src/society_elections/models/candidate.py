@@ -1,10 +1,10 @@
 import uuid
 
-from django.conf import settings
 from django.core.mail import send_mail
 from django.db import models
 from django.urls import reverse
 
+from .. import app_settings
 from ..apps import SocietyElectionsConfig
 from .electionposition import ElectionPosition
 
@@ -79,9 +79,9 @@ class Candidate(models.Model):
     def verify_url(self) -> str:
         """str: URL to click to verify the email address of a candidate"""
         return (
-            settings.ROOT_URL + reverse(
-                "candidate_verify", args=(self.email_uuid,)
-            )
+            app_settings.ROOT_URL + reverse(
+                'society_elections:verify_candidate'
+            ) + f'?uuid={self.email_uuid}'
         )
 
     
