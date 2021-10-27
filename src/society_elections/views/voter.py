@@ -1,12 +1,16 @@
 import logging
 
+from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
-from django.http import HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.http import require_POST
+from ipware.ip import get_client_ip
 
+from .. import app_settings
 from ..forms import RegisteredVoterForm
 from ..models import AnonymousVoter, RegisteredVoter
 from .helpers import get_latest_election, get_template
@@ -40,10 +44,9 @@ def create_voter_view(req: HttpRequest) -> HttpResponse:
                 logger.debug(
                     f'Voter "{existing_voter[0].email}" found for this election'
                 )
-                return (req, get_template('voter_exists'), {
+                return render(req, get_template('voter_exists'), {
                     'election': election,
-                    'form': form,
-                    'verified': existing_voter[0].verified
+                    'voter': existing_voter.get()
                 })
             else:
                 # Verify email in correct domain
@@ -65,6 +68,12 @@ def create_voter_view(req: HttpRequest) -> HttpResponse:
                     voter.election = election
                     voter.save()
                     voter.send_verification_email()
+                    return render(
+                        req, get_template('voter_verification_sent'), {
+                            'election': election,
+                            'voter': voter
+                        }
+                    )
     else:
         form = RegisteredVoterForm()
     return render(req, get_template('voter_form'), {
@@ -86,7 +95,15 @@ def verify_voter_view(req: HttpRequest) -> HttpResponse:
         HttpResponse: response to user
     """
     uuid = req.GET.get('uuid')
-    voter = get_object_or_404(RegisteredVoter, pk=uuid)
+    election = get_latest_election()
+    ip = get_client_ip(req)
+    try:
+        voter = get_object_or_404(RegisteredVoter, pk=uuid, election=election)
+    except Http404:
+        logger.info(f'Voter 404 not found: {uuid} "{election}" ({ip})')
+        return render(req, get_template('voter_404'), {
+            'uuid': uuid
+        })
     if not voter.verified:
         logger.debug(f'Voter {uuid} not verified yet, verifying...')
         voter.verified_at = timezone.now()
@@ -103,33 +120,39 @@ def verify_voter_view(req: HttpRequest) -> HttpResponse:
             anon_voter.password = AnonymousVoter.hash_password(password)
             anon_voter.save()
             logger.debug('Anonymous voter created, emailing password to user')
+            message = f'''<p>You have successfully verified your email to vote in the election "{voter.election}"". Your password to vote is shown below. Keep it safe and confidential as it identifies you as a voter.<p>
+            <p><b>{password}<b><p>
+            <p><a href="{app_settings.ROOT_URL}{reverse('society_elections:vote')}">Click here</a> to vote, or copy and paste the following link into your browser: <code>{app_settings.ROOT_URL}{reverse('society_elections:vote')}</code></p>
+            '''
             send_mail(
                 subject=f'Voting password for election {voter.election}',
-                message=f'''<p>You have successfully verified your email to vote in the election "{voter.election}"". Your password to vote is shown below. Keep it safe and confidential as it identifies you as a voter.<p>
-                <p><b>{password}<b><p>
-                <p><a href="{reverse('society_elections:vote')}">Click here</a> to vote, or copy and paste the following link into your browser: <code>{reverse('society_elections:vote')}</code></p>
-                ''',
+                message=message,
                 from_email=None,
-                recipient_list=[voter.email,]
+                recipient_list=[voter.email,],
+                html_message=message
             )
             logger.debug('Password email sent, returning template')
             return render(req, get_template('voter_verified_anon_election'), {
-                'password': password
+                'password': password,
+                'election': election
             })
         else:
-            return render(req, get_template('voter_verified'), {
-                'uuid': uuid
-            })
+            messages.add_message(req, messages.INFO, 
+                'Your email has successfully been verified.'
+            )
     elif voter.election.anonymous:
         # If voter in anonymous election already verified, do not generate 
         # another password
         logger.warning(
-            f'Someone tried to re-verify {voter.email} when they are already '
-            ' verified in an anonymous election'
+            'Verified voter requested re-verification in anon election: '
+            f'{voter} "{election}" ({ip})'
         )
-        return render(req, get_template('voter_already_verified'))
+        return render(req, get_template('voter_exists'), {
+            'voter': voter,
+            'election': election
+        })
     
-    # Voter has already been verified
+    # Voter has been verified
     return redirect(reverse('society_elections:vote') + f'?uuid={uuid}')
 
 
