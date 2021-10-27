@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from .. import app_settings
 from ..apps import SocietyElectionsConfig
-from ..models import Election
+from .election import Election
 from .electionposition import ElectionPosition
 
 
