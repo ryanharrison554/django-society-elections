@@ -6,6 +6,7 @@ from django.urls import reverse
 
 from .. import app_settings
 from ..apps import SocietyElectionsConfig
+from ..models import Election
 from .electionposition import ElectionPosition
 
 
@@ -65,13 +66,16 @@ class Candidate(models.Model):
                 raise ValueError(
                     'UUID has not yet been set, cannot send verification email'
                 )
+            election: Election = self.position.election
+            message = election.candidate_verification_email.format(
+                name=self.full_name,
+                position=self.position.position.title,
+                verify_url=self.verify_url
+            )
             send_mail(
                 f'Verify Email for Nomination in {self.position.election}',
-                self.position.election.candidate_verification_email.format(
-                    name=self.full_name,
-                    position=self.position.position.title,
-                    verify_url=self.verify_url
-                ), None, [self.email,]
+                message, None, [self.email,], 
+                html_message=message
             )
 
 
@@ -80,7 +84,7 @@ class Candidate(models.Model):
         """str: URL to click to verify the email address of a candidate"""
         return (
             app_settings.ROOT_URL + reverse(
-                'society_elections:verify_candidate'
+                'society_elections:candidate_verify'
             ) + f'?uuid={self.email_uuid}'
         )
 

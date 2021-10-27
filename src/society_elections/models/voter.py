@@ -63,7 +63,7 @@ class RegisteredVoter(models.Model):
         """str: URL to click to verify the email address of a voter"""
         return (
             app_settings.ROOT_URL + reverse(
-                'society_elections:verify_voter'
+                'society_elections:voter_verify'
             ) + f'?uuid={self.pk}'
         )
 
@@ -81,12 +81,13 @@ class RegisteredVoter(models.Model):
                 'email until we have a primary key to validate against.'
             )
         else:
+            message = self.election.voter_verification_email.format(
+                email=self.email,
+                verify_url=self.verify_url
+            )
             send_mail(
-                f'Verify Email for Voting in {self.position.election}',
-                self.election.voter_verification_email.format(
-                    email=self.email,
-                    verify_url=self.verify_url
-                ), None, [self.email,]
+                f'Verify Email for Voting in {self.election}',
+                message, None, [self.email,], html_message=message
             )
 
     def __str__(self):
