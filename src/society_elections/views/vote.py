@@ -59,10 +59,11 @@ def vote_view(req: HttpRequest) -> HttpResponse:
         logger.warning(
             f'Voter 401 not registered: anonymous "{election}" ({ip})'
         )
-        messages.add_message(req, messages.ERROR,
-            'The password used was either incorrect, or your email has not '
-            'yet been verified.'
-        )
+        if password is not None:
+            messages.add_message(req, messages.ERROR,
+                'The password used was either incorrect, or your email has not '
+                'yet been verified.'
+            )
         return render(req, get_template('password_entry'), status=401)
     else:
         voter = None
