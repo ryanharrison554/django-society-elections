@@ -132,3 +132,61 @@ def verify_voter_view(req: HttpRequest) -> HttpResponse:
     # Voter has already been verified
     return redirect(reverse('society_elections:vote') + f'?uuid={uuid}')
 
+
+@require_POST
+def resend_voter_verification(req: HttpRequest) -> HttpResponse:
+    """Resends the verification email for a given RegisteredVoter
+    
+    This view will not resend the verification email for a verified voter in an 
+    anonymous election as this would not resolve any issues. The user would 
+    click the verification email and be told that they have already been 
+    verified.
+    
+    Args:
+        req (HttpRequest): Request from user
+        
+    Returns:
+        HttpResponse: Response to user
+    """
+    election = get_latest_election()
+    email = req.POST.get('email')
+    uuid = req.POST.get('uuid')
+    ip = get_client_ip(req)
+
+    if email is not None and uuid is not None:
+        return HttpResponse(content='400 Bad request', status=400)
+
+    # Find Voter
+    try:
+        if email is not None:
+            voter = get_object_or_404(
+                RegisteredVoter, email=email, election=election
+            )
+        else:
+            voter = get_object_or_404(
+                RegisteredVoter, pk=uuid, election=election
+            )
+    except Http404:
+        logger.info(f'Voter 404 not found: {email} "{election}" ({ip})')
+        return render(req, get_template('voter_404'), {
+            'email': email
+        })
+    
+    # Check for bad conditions
+    if election.anonymous and voter.verified:
+        logger.info(
+            'Verified voter requested re-verification in anon election: '
+            f'{voter} "{election}" ({ip})'
+        )
+        return render(req, get_template('voter_exists'), {
+            'voter': voter,
+            'election': election
+        })
+    
+    # Resend verification email
+    voter.send_verification_email()
+    return render(req, get_template('voter_verification_sent'), {
+            'election': election,
+            'voter': voter
+    })
+    
