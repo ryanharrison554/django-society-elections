@@ -25,10 +25,12 @@ class CandidateAdmin(admin.ModelAdmin):
     """Class defining how an Candidate model is presented in the admin interface
 
     Attributes:
-        date_hierarchy (str): How Candidates are grouped by date
+        list_display (tuple): What fields are shown on the tables
         form (django.forms.ModelForm): Which form to use for the model
+        actions (list): Actions registered on the admin interface
     """
     form = CandidateAdminForm
+    list_display = ('__str__', 'position_election', 'email_verified')
     actions = ['resend_verification_email_action']
 
     @admin.action(description='Resend verification emails')
@@ -49,3 +51,7 @@ class CandidateAdmin(admin.ModelAdmin):
             candidate.email_uuid = None
             candidate.save() # Regenerates UUID
             candidate.send_verification_email()
+
+    @admin.display(description='Election')
+    def position_election(self, obj: Candidate):
+        return Candidate.position.election
