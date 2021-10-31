@@ -75,10 +75,14 @@ def vote_view(req: HttpRequest) -> HttpResponse:
         )
 
     # Voter verified
+    verified_candidates = Candidate.objects.filter(
+        position__election=election, email_verified=True
+    )
     context = {
         'election': election,
         'voter': voter,
-        'password': password
+        'password': password,
+        'candidates': verified_candidates
     }
 
     # Voter has been verified, we can now check if we need to submit votes or 
@@ -195,7 +199,8 @@ def create_vote_ajax(req: HttpRequest) -> JsonResponse:
     else:
         try:
             candidate = get_object_or_404(
-                Candidate, position__election=election, pk=int(candidate_pk)
+                Candidate, position__election=election, pk=int(candidate_pk),
+                email_verified=True
             )
         except (Http404, ValueError):
             return JsonResponse({
