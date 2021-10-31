@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class Election(models.Model):
@@ -40,6 +41,12 @@ class Election(models.Model):
         results_submitted_at (datetime): When were the results finalised
         positions (object): one-to-many relation to ElectionPosition
         anonymous (bool): Whether or not the votes should be anonymized
+        NOMINATIONS (str): Represents the nomination period of the election
+        VOTING (str): Representing the voting period of the election
+        INTERIM (str): Represents the time between nominations and voting
+        PRENOMINATION (str): Represents the time before nominations begin
+        POSTVOTING (str): Represents the time after voting has finished
+        FINISHED (str): Represents that the election has finished
     """
     title = models.CharField(
         max_length=100
@@ -143,8 +150,36 @@ class Election(models.Model):
         default=True,
     )
 
+    NOMINATIONS = 'nominations'
+    VOTING = 'voting'
+    INTERIM = 'interim'
+    PRENOMINATION = 'pre-nomination'
+    POSTVOTING = 'post-voting'
+    FINISHED = 'finished'
+    ELECTION_PERIODS = (
+        NOMINATIONS, VOTING, INTERIM, PRENOMINATION, POSTVOTING, FINISHED
+    )
+
     def __str__(self):
         return self.admin_title
+
+    @property
+    def current_period(self) -> str:
+        """str: Returns the period the election is currently in"""
+        now = timezone.now()
+        if self.nominations_start <= now and self.nominations_end > now:
+            return self.NOMINATIONS
+        elif self.voting_start <= now and self.voting_end > now:
+            return self.VOTING
+        elif self.nominations_end <= now and self.voting_start > now:
+            return self.INTERIM
+        elif self.nominations_start > now:
+            return self.PRENOMINATION
+        elif not self.results_submitted:
+            return self.POSTVOTING
+        else:
+            return self.FINISHED
+        
 
     class Meta:
         app_label = 'society_elections'
