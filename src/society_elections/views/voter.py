@@ -12,11 +12,14 @@ from ipware.ip import get_client_ip
 
 from .. import app_settings
 from ..forms import RegisteredVoterForm
-from ..models import AnonymousVoter, RegisteredVoter
+from ..models import AnonymousVoter, Election, RegisteredVoter
+from .decorators import validate_election_period
 from .helpers import get_latest_election, get_template
 
 logger = logging.getLogger(__name__)
 
+
+@validate_election_period(Election.VOTING)
 def create_voter_view(req: HttpRequest) -> HttpResponse:
     """Validates the VoterForm and creates a new voter in the DB
 
@@ -82,6 +85,7 @@ def create_voter_view(req: HttpRequest) -> HttpResponse:
     })
 
 
+@validate_election_period(Election.VOTING)
 def verify_voter_view(req: HttpRequest) -> HttpResponse:
     """Verify a voter using the GET data in the request
 
@@ -157,6 +161,7 @@ def verify_voter_view(req: HttpRequest) -> HttpResponse:
 
 
 @require_POST
+@validate_election_period(Election.VOTING)
 def resend_voter_verification(req: HttpRequest) -> HttpResponse:
     """Resends the verification email for a given RegisteredVoter
     

@@ -5,18 +5,21 @@ from django.http import HttpRequest, HttpResponse
 from django.http.response import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
-from django.utils import timezone
 from ipware import get_client_ip
 
-from ..models import AnonymousVoter, ElectionPosition, RegisteredVoter, Vote, Candidate
+from ..models import (AnonymousVoter, Candidate, Election, ElectionPosition,
+                      RegisteredVoter, Vote)
+from .decorators import validate_election_period
 from .helpers import (get_latest_election, get_template,
                       is_request_authenticated)
 
 logger = logging.getLogger(__name__)
 
 
+@validate_election_period(Election.VOTING)
 def vote_view(req: HttpRequest) -> HttpResponse:
     """View to vote in an election
 
@@ -124,6 +127,7 @@ class VoteSubmittedView(TemplateView):
 
 
 @require_POST
+@validate_election_period(Election.VOTING)
 def create_vote_ajax(req: HttpRequest) -> JsonResponse:
     """Create a new vote
 
@@ -270,6 +274,7 @@ def create_vote_ajax(req: HttpRequest) -> JsonResponse:
 
 
 @require_POST
+@validate_election_period(Election.VOTING)
 def delete_vote_ajax(req: HttpRequest) -> JsonResponse:
     """Deletes a given vote from the database
     

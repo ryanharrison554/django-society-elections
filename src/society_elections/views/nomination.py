@@ -3,15 +3,19 @@ import logging
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
 
 from ..forms import NominationForm
-from ..models import Candidate, ElectionPosition
+from ..models import Candidate, Election, ElectionPosition
+from .decorators import validate_election_period
 from .helpers import get_latest_election, get_template
 
 logger = logging.getLogger(__name__)
 
+
+@method_decorator(validate_election_period(Election.NOMINATIONS), 'dispatch')
 class NominationFormView(FormView):
     """Sends a NominationForm to the user, and validates the response
 
@@ -50,6 +54,7 @@ class NominationFormView(FormView):
         return reverse('society_elections:nomination_success')
 
 
+@method_decorator(validate_election_period(Election.NOMINATIONS), 'dispatch')
 class NominationSuccessView(TemplateView):
     """When a nomination has been successful"""
 
@@ -57,6 +62,7 @@ class NominationSuccessView(TemplateView):
         return [get_template('nomination_success'),]
 
 
+@validate_election_period(Election.NOMINATIONS)
 def verify_candidate_view(req: HttpRequest) -> HttpResponse:
     """Verify a given UUID belongs to a candidate
     
