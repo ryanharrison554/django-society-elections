@@ -1,8 +1,10 @@
 import functools
 import logging
-from django.http import HttpRequest
+
 from django.db.models import Model
 from django.db.models.query import QuerySet
+from django.http import HttpRequest
+
 
 def log_model_admin_action(
     action: str, 
@@ -53,4 +55,3 @@ def log_model_admin_action(
             return func(*args, **kwargs)
         return wrapper
     return log_model_admin_action_wrapper
-            

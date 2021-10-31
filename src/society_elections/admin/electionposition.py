@@ -3,8 +3,8 @@ from logging import getLogger
 from django.contrib import admin
 from django.utils.decorators import method_decorator
 
-from ..decorators import log_model_admin_action
 from ..models import ElectionPosition
+from .decorators import log_model_admin_action
 
 logger = getLogger(__name__)
 

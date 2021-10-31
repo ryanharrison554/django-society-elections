@@ -1,12 +1,12 @@
 from logging import getLogger
 
 from django.contrib import admin
-from django.utils.decorators import method_decorator
 from django.http import HttpRequest
+from django.utils.decorators import method_decorator
 
 from ..forms import ElectionForm
 from ..models import Election
-from ..decorators import log_model_admin_action
+from .decorators import log_model_admin_action
 
 logger = getLogger(__name__)
 

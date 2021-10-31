@@ -5,9 +5,9 @@ from django.db.models.query import QuerySet
 from django.http import HttpRequest
 from django.utils.decorators import method_decorator
 
-from ..decorators import log_model_admin_action
 from ..forms import CandidateAdminForm
 from ..models import Candidate
+from .decorators import log_model_admin_action
 
 logger = getLogger(__name__)
 
