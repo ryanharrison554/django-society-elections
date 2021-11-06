@@ -165,8 +165,8 @@ def create_vote_ajax(req: HttpRequest) -> JsonResponse:
     if not authenticated:
         logger.info(f'Voter not authorized: - "{election}" ({ip})')
         return JsonResponse({
-            'error': 'Not authorized to Vote'
-        }, status=401)
+            'error': 'Not authorized to vote'
+        })
 
     try:
         position: ElectionPosition = get_object_or_404(
@@ -175,7 +175,7 @@ def create_vote_ajax(req: HttpRequest) -> JsonResponse:
     except (Http404, ValueError):
         return JsonResponse({
             'error': 'Position does not exist',
-        }, status=404)
+        })
 
     try:
         candidate = get_object_or_404(
@@ -239,7 +239,7 @@ def create_vote_ajax(req: HttpRequest) -> JsonResponse:
             return JsonResponse({
                 'error': 'Already submitted votes for this position or '
                          'candidate'
-            }, status=409) # 409 = Conflict
+            }) # 409 = Conflict
     
     # Can submit vote - no existing vote, or enough spaces left to vote
     new_vote = Vote(
@@ -281,7 +281,9 @@ def delete_vote_ajax(req: HttpRequest) -> JsonResponse:
     
     if not authenticated:
         logger.info(f'Voter not authorized: - "{election}" ({ip})')
-        return JsonResponse({}, status=401)
+        return JsonResponse({
+            'error': 'Not authorized to vote'
+        })
 
     if election.anonymous:
         anon_voter = AnonymousVoter.objects.get(
@@ -303,6 +305,13 @@ def delete_vote_ajax(req: HttpRequest) -> JsonResponse:
             pk=int(vote_pk)
         )
     except (Http404, ValueError):
+        logger.warning(
+            f'Voter cannot delete vote: {voter} "{candidate_pk},'
+            f'{position_pk}" ({ip})'
+        )
+        return JsonResponse({
+            'error': 'Vote does not exist'
+        })
     vote_pk = vote.pk
     vote.delete()
     return JsonResponse({
