@@ -7,7 +7,8 @@ test:
 build: migrations
 	python setup.py build
 
-install: migrations
+install:
+	pip install -r requirements.txt
 	python setup.py install
 
 upload:
