@@ -27,7 +27,17 @@ def create_election(
     return Election.objects.create(
         admin_title=admin_title,
         created_by=created_by,
-        **{**ELECTION_DATA, **kwargs}
+        title=kwargs.pop('title', ELECTION_DATA['title']),
+        description=kwargs.pop('description', ELECTION_DATA['description']),
+        nominations_start=kwargs.pop('nominations_start', ELECTION_DATA['nominations_start']),
+        nominations_end=kwargs.pop('nominations_end', ELECTION_DATA['nominations_end']),
+        voting_start=kwargs.pop('voting_start', ELECTION_DATA['voting_start']),
+        voting_end=kwargs.pop('voting_end', ELECTION_DATA['voting_end']),
+        candidate_email_domain_whitelist=kwargs.pop(
+            'candidate_email_domain_whitelist', 
+            ELECTION_DATA['candidate_email_domain_whitelist']
+        ),
+        **kwargs
     )
 
 
@@ -71,12 +81,13 @@ def create_candidate(position: ElectionPosition, **kwargs) -> Candidate:
     full_name = kwargs.pop('full_name', 'Test McTestface')
     email = kwargs.pop('email', EMAIL)
     manifesto = kwargs.pop('manifesto', 'Test manifesto')
+    email_verified = kwargs.pop('email_verified', True)
     return Candidate.objects.create(
         position=position,
         full_name=full_name,
         email=email,
         manifesto=manifesto,
-        **kwargs
+        email_verified=email_verified
     )
 
 

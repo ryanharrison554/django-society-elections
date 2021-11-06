@@ -48,7 +48,7 @@ if __name__ == '__main__':
         ],
         TIME_ZONE='UTC',
         USE_TZ=True,
-        ROOT_URLCONF='society_elections.urls',
+        ROOT_URLCONF='urls',
         ALLOWED_HOSTS=['localhost'],
         SECRET_KEY='insecure'
     )
