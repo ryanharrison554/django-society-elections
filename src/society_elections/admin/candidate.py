@@ -54,4 +54,4 @@ class CandidateAdmin(admin.ModelAdmin):
 
     @admin.display(description='Election')
     def position_election(self, obj: Candidate):
-        return Candidate.position.election
+        return obj.position.election
