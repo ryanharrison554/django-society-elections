@@ -50,16 +50,6 @@ class Vote(models.Model):
         related_query_name='vote',
         editable=False
     )
-    ron = models.BooleanField(
-        default=False,
-        help_text='Vote to re-open the nominations for this position',
-        verbose_name='re-open nominations'
-    )
-    abstain = models.BooleanField(
-        default=False,
-        help_text='Vote not to submit a vote for any candidate for this '
-        'position'
-    )
     vote_cast_at = models.DateTimeField(
         auto_now_add=True,
         editable=False

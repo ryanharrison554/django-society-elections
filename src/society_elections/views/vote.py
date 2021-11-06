@@ -152,8 +152,6 @@ def create_vote_ajax(req: HttpRequest) -> JsonResponse:
     ip, _ = get_client_ip(req)
     candidate_pk = req.POST.get('candidate')
     position_pk = req.POST.get('position')
-    ron = req.POST.get('ron') is not None
-    abstain = req.POST.get('abstain') is not None
     try:
         authenticated = is_request_authenticated(election, req)
     except Http404:
@@ -175,37 +173,15 @@ def create_vote_ajax(req: HttpRequest) -> JsonResponse:
             'error': 'Position does not exist',
         }, status=404)
 
-    # Check for bad request
-    if (not position.allow_ron) and ron:
+    try:
+        candidate = get_object_or_404(
+            Candidate, position__election=election, pk=int(candidate_pk),
+            email_verified=True
+        )
+    except (Http404, ValueError):
         return JsonResponse({
-            'error': 'Cannot vote RON for this position'
-        }, status=400)
-    elif (not position.allow_abstain) and abstain:
-        return JsonResponse({
-            'error': 'Cannot abstain from voting for this position'
-        }, status=400)
-    elif (
-        (ron and abstain) or
-        (candidate_pk is not None and ron) or
-        (candidate_pk is not None and abstain)
-    ):
-        return JsonResponse({
-            'error': 'Can only vote for one of a candidate, RON or abstain'
-        }, status=400)
-
-    # Check candidate exists
-    if abstain or ron:
-        candidate = None
-    else:
-        try:
-            candidate = get_object_or_404(
-                Candidate, position__election=election, pk=int(candidate_pk),
-                email_verified=True
-            )
-        except (Http404, ValueError):
-            return JsonResponse({
-                'error': 'Candidate does not exist'
-            }, status=404)
+            'error': 'Candidate does not exist'
+        })
     
     # Find clashing votes - change vote if positions available is only 1
     if election.anonymous:
@@ -233,8 +209,6 @@ def create_vote_ajax(req: HttpRequest) -> JsonResponse:
             logger.debug(f'Could not find existing vote for {position}')
         else:
             existing_vote.candidate = candidate
-            existing_vote.abstain = abstain
-            existing_vote.ron = ron
             existing_vote.vote_last_modified_at = timezone.now()
             logger.info(f'Vote updated: {voter} "{existing_vote}" ({ip})')
             existing_vote.save()
@@ -248,9 +222,7 @@ def create_vote_ajax(req: HttpRequest) -> JsonResponse:
             registered_voter=reg_voter
         )
         existing_votes_for_candidate = existing_votes.filter(
-            candidate=candidate,
-            abstain=abstain,
-            ron=ron
+            candidate=candidate
         )
         if (
             existing_votes.count() >= position.positions_available or 
@@ -267,9 +239,7 @@ def create_vote_ajax(req: HttpRequest) -> JsonResponse:
         registered_voter=reg_voter,
         anonymous_voter=anon_voter,
         candidate=candidate,
-        position=candidate.position,
-        abstain=abstain,
-        ron=ron
+        position=candidate.position
     )
     new_vote.save()
     logger.info(f'Vote created: {voter} "{new_vote}" ({ip})')
