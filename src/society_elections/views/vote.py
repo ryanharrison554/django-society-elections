@@ -271,7 +271,8 @@ def delete_vote_ajax(req: HttpRequest) -> JsonResponse:
     uuid = req.POST.get('uuid')
     password = req.POST.get('password')
     ip, _ = get_client_ip(req)
-    vote_pk = req.POST.get('vote')
+    candidate_pk = req.POST.get('candidate')
+    position_pk = req.POST.get('position')
 
     try:
         authenticated = is_request_authenticated(election, req)
@@ -302,7 +303,8 @@ def delete_vote_ajax(req: HttpRequest) -> JsonResponse:
             Vote,
             registered_voter=reg_voter,
             anonymous_voter=anon_voter,
-            pk=int(vote_pk)
+            candidate__pk=int(candidate_pk),
+            position__pk=int(position_pk)
         )
     except (Http404, ValueError):
         logger.warning(
