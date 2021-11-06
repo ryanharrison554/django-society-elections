@@ -78,11 +78,19 @@ def vote_view(req: HttpRequest) -> HttpResponse:
     verified_candidates = Candidate.objects.filter(
         position__election=election, email_verified=True
     )
+    if election.anonymous:
+        votes = Vote.objects.filter(anonymous_voter=anon_voter)
+    else:
+        votes = Vote.objects.filter(registered_voter=voter)
+    candidates_voted = [vote.candidate for vote in votes]
     context = {
         'election': election,
+        'candidates': verified_candidates,
+        'candidates_voted': candidates_voted,
+        'positions': election.positions.all(),
         'voter': voter,
         'password': password,
-        'candidates': verified_candidates
+        'votes': votes,
     }
 
     # Voter has been verified, we can now check if we need to submit votes or 
@@ -91,10 +99,6 @@ def vote_view(req: HttpRequest) -> HttpResponse:
         return render(req, get_template('vote'), context)
     
     # Method is POST and submit is present
-    if election.anonymous:
-        votes = Vote.objects.filter(anonymous_voter=anon_voter)
-    else:
-        votes = Vote.objects.filter(registered_voter=voter)
 
     positions = ElectionPosition.objects.filter(election=election)
     position_votes = {}
@@ -208,12 +212,15 @@ def create_vote_ajax(req: HttpRequest) -> JsonResponse:
         except Http404:
             logger.debug(f'Could not find existing vote for {position}')
         else:
+            old_candidate_pk = existing_vote.candidate.pk
             existing_vote.candidate = candidate
             existing_vote.vote_last_modified_at = timezone.now()
             logger.info(f'Vote updated: {voter} "{existing_vote}" ({ip})')
             existing_vote.save()
             return JsonResponse({
-                'vote': str(existing_vote.pk)
+                'vote': str(existing_vote.pk),
+                'old_candidate': old_candidate_pk,
+                'new_candidate': candidate.pk
             })
     else:
         existing_votes = Vote.objects.filter(
@@ -244,7 +251,8 @@ def create_vote_ajax(req: HttpRequest) -> JsonResponse:
     new_vote.save()
     logger.info(f'Vote created: {voter} "{new_vote}" ({ip})')
     return JsonResponse({
-        'vote': str(new_vote.pk)
+        'vote': str(new_vote.pk),
+        'new_candidate': candidate.pk
     })
 
 
@@ -295,8 +303,9 @@ def delete_vote_ajax(req: HttpRequest) -> JsonResponse:
             pk=int(vote_pk)
         )
     except (Http404, ValueError):
-        logger.warning(f'Voter cannot delete vote: {voter} "{vote_pk}" ({ip})')
-        return JsonResponse({}, status=401)
-    
+    vote_pk = vote.pk
     vote.delete()
-    return JsonResponse({})
+    return JsonResponse({
+        'candidate': candidate_pk,
+        'vote': vote_pk
+    })
