@@ -17,7 +17,10 @@ You will need some settings for your Django project to make this work. If you wa
 
 ```python
 # The root URL of your site without the trailing slash
-ROOT_URL = "http(s)://[hostname]"
+SOCIETY_ELECTIONS_ROOT_URL = "http(s)://[hostname]"
+
+# Prefix to your templates if you have written your own
+SOCIETY_ELECTIONS_TEMPLATE_PREFIX = "elections/"
 
 # Email address to send emails from
 DEFAULT_FROM_EMAIL = "noreply@hostname"
@@ -25,4 +28,4 @@ DEFAULT_FROM_EMAIL = "noreply@hostname"
 
 You will also need any additional email configuration to get the emailing functionality working in your Django application. See https://docs.djangoproject.com/en/dev/topics/email/
 
-You will also need a URL path with a name `verify_candidate` which points at a view to validate a given candidate. URL configuration should take one argument which will be the UUID used to verify the email. You can check that an email has been validated by comparing the UUID supplied against a lookup in the database, and then marking the resulting record as verified. Optionally, you can then clear the `email_uuid` field in the database.
+Currently I have not written documentation for the various models, views, and urls. To understand the functionality whilst this is in progress I recommend you take a look at the source code for these classes and functions yourself.
