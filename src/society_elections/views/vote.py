@@ -124,7 +124,7 @@ def vote_view(req: HttpRequest) -> HttpResponse:
         if voter is None:
             voter = anon_voter
         logger.info(f'Votes submitted: {voter} "{election}" ({ip})')
-        return redirect(reverse('vote_submitted'))
+        return redirect(reverse('society_elections:vote_submitted'))
 
 
 class VoteSubmittedView(TemplateView):
