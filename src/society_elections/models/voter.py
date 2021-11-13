@@ -143,3 +143,6 @@ class AnonymousVoter(models.Model):
         hash = sha512()
         hash.update(password.encode())
         return hash.digest()
+
+    def __str__(self):
+        return str(self.pk)
