@@ -128,21 +128,17 @@ class Election(models.Model):
         default='Click the link below or copy into your browser to verify your '
         'email address:\n\n{verify_url}'
     )
-    results_submitted = models.BooleanField(
-        default=False,
-        editable=False
-    )
-    results_submitted_by = models.ForeignKey(
+    ended_by = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         null=True,
-        blank=True,
+        blank=False,
         editable=False,
-        related_name='elections_finished',
-        related_query_name='election_finished'
+        related_name='elections_ended',
+        related_query_name='election_ended'
     )
-    results_submitted_at = models.DateTimeField(
-        blank=True,
+    ended_at = models.DateTimeField(
+        blank=False,
         null=True,
         editable=False
     )
@@ -167,7 +163,9 @@ class Election(models.Model):
     def current_period(self) -> str:
         """str: Returns the period the election is currently in"""
         now = timezone.now()
-        if self.nominations_start <= now and self.nominations_end > now:
+        if self.ended_by is not None:
+            return self.FINISHED
+        elif self.nominations_start <= now and self.nominations_end > now:
             return self.NOMINATIONS
         elif self.voting_start <= now and self.voting_end > now:
             return self.VOTING
@@ -175,10 +173,8 @@ class Election(models.Model):
             return self.INTERIM
         elif self.nominations_start > now:
             return self.PRENOMINATION
-        elif not self.results_submitted:
-            return self.POSTVOTING
         else:
-            return self.FINISHED
+            return self.POSTVOTING
         
 
     class Meta:
