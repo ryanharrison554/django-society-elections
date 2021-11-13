@@ -72,5 +72,13 @@ class Vote(models.Model):
         else:
             return f'Anonymous Voter {self.anonymous_voter}'
 
+    @property
+    def voter_pk(self) -> str:
+        """str: String representing the primary key of the voter"""
+        if self.anonymous_voter is None:
+            return str(self.registered_voter.pk)
+        else:
+            return str(self.anonymous_voter.pk)
+
     def __str__(self):
         return f'{self.voter_str} voting {self.candidate}'
