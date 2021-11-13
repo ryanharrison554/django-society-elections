@@ -27,7 +27,9 @@ class ElectionAdmin(admin.ModelAdmin):
         list_display (tuple): Which fields should be shown in the table
         form (django.forms.ModelForm): Which form to use for the model
     """
-    list_display = ('admin_title', 'nominations_start', 'voting_start')
+    list_display = (
+        'admin_title', 'nominations_start', 'voting_start', 'ended_at'
+    )
     form = ElectionForm
 
 
