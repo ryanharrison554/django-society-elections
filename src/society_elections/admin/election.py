@@ -79,7 +79,8 @@ class ElectionAdmin(admin.ModelAdmin):
         writer = csv.writer(f)
         writer.writerow([
             'voter_id', 'election_id', 'election_admin_title', 'anonymous',
-            'candidate', 'candidate_id', 'vote_cast_at', 'vote_last_modified'
+            'position', 'candidate', 'candidate_id',
+            'vote_cast_at', 'vote_last_modified'
         ])
         election: Election
         position: ElectionPosition
@@ -92,7 +93,8 @@ class ElectionAdmin(admin.ModelAdmin):
                         str(election.pk),
                         election.admin_title, 
                         election.anonymous,
-                        str(vote.candidate),
+                        position.position.title,
+                        vote.candidate.full_name,
                         str(vote.candidate.pk),
                         vote.vote_cast_at.isoformat(),
                         vote.vote_last_modified_at.isoformat()
