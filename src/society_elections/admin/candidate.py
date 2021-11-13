@@ -1,9 +1,10 @@
 from logging import getLogger
 
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
 from django.utils.decorators import method_decorator
+from django.utils.translation import ngettext
 
 from ..forms import CandidateAdminForm
 from ..models import Candidate
@@ -51,6 +52,11 @@ class CandidateAdmin(admin.ModelAdmin):
             candidate.email_uuid = None
             candidate.save() # Regenerates UUID
             candidate.send_verification_email()
+        messages.add_message(request, messages.SUCCESS,
+            f'Successfully resent {queryset.count()} verification email'+
+            ngettext('', 's', queryset.count())
+        )
+
 
     @admin.display(description='Election')
     def position_election(self, obj: Candidate):

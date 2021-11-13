@@ -1,9 +1,10 @@
 from logging import getLogger
 
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
 from django.utils.decorators import method_decorator
+from django.utils.translation import ngettext
 
 from ..models import RegisteredVoter
 from .decorators import log_model_admin_action
@@ -46,3 +47,7 @@ class RegisteredVoterAdmin(admin.ModelAdmin):
         voter: RegisteredVoter
         for voter in queryset:
             voter.send_verification_email()
+        messages.add_message(request, messages.SUCCESS,
+            f'Successfully sent {queryset.count()} verification email'+
+            ngettext('', 's', queryset.count())
+        )
