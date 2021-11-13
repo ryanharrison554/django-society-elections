@@ -31,7 +31,7 @@ class CandidateAdmin(admin.ModelAdmin):
         actions (list): Actions registered on the admin interface
     """
     form = CandidateAdminForm
-    list_display = ('__str__', 'position_election', 'email_verified')
+    list_display = ('__str__', 'position_election', 'email_verified', 'votes')
     actions = ['resend_verification_email_action']
 
     @admin.action(description='Resend verification emails')
@@ -61,3 +61,8 @@ class CandidateAdmin(admin.ModelAdmin):
     @admin.display(description='Election')
     def position_election(self, obj: Candidate):
         return obj.position.election
+
+
+    @admin.display(description='Votes')
+    def votes(self, obj: Candidate):
+        return obj.votes.count()
