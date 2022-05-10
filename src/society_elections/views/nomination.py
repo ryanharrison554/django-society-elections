@@ -75,7 +75,7 @@ def verify_candidate_view(req: HttpRequest) -> HttpResponse:
     Returns:
         HttpResponse
     """
-    uuid = req.GET.get('uuid')
+    uuid = req.GET.get('uuid').lower()
     matching_candidates = Candidate.objects.filter(email_uuid=uuid)
     if not matching_candidates.exists() == 0:
         logger.warning(
