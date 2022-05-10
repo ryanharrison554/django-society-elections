@@ -98,7 +98,7 @@ def verify_voter_view(req: HttpRequest) -> HttpResponse:
     Returns:
         HttpResponse: response to user
     """
-    uuid = req.GET.get('uuid')
+    uuid = req.GET.get('uuid').lower()
     election = get_latest_election()
     ip = get_client_ip(req)
     try:
