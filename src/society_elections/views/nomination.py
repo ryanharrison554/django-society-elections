@@ -77,7 +77,7 @@ def verify_candidate_view(req: HttpRequest) -> HttpResponse:
     """
     uuid = req.GET.get('uuid').lower()
     matching_candidates = Candidate.objects.filter(email_uuid=uuid)
-    if not matching_candidates.exists() == 0:
+    if not matching_candidates.exists():
         logger.warning(
             f'Someone tried to verify a candidate with UUID="{uuid}", but no '
             'such UUID existed in the database'
