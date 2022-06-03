@@ -1,7 +1,11 @@
+from logging import getLogger
+
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
 
 from ..models import Candidate, Election, ElectionPosition
+
+logger = getLogger(__name__)
 
 class BaseCandidateForm(ModelForm):
     """Base form for a Candidate providing validation
@@ -17,9 +21,15 @@ class BaseCandidateForm(ModelForm):
         position: ElectionPosition = cleaned_data.get('position')
         election: Election = position.election
 
-        email_whitelist = election.candidate_email_domain_whitelist.split('\n')
-        email_domain = email.split('@')[-1]
+        logger.debug(
+            f'Verifying that "{email}" has a valid domain in the whitelist'
+        )
+
+        logger.debug(f'Whitelist: {email_whitelist}')
+        email_domain = email.split('@')[1]
+        logger.debug(f'Email domain to validate: {email_domain}')
         if email_domain not in email_whitelist:
+            logger.debug(f'Email "{email}" not in valid domains')
             self.add_error('email', ValidationError(
                 'Email not in whitelisted domains for this election'
             ))
