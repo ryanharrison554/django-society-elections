@@ -54,7 +54,7 @@ def create_voter_view(req: HttpRequest) -> HttpResponse:
             else:
                 # Verify email in correct domain
                 email_domain = form.cleaned_data['email'].split('@')[1]
-                domains = election.voter_email_domain_whitelist.split('\n')
+                domains = election.voter_email_domain_whitelist.split()
                 logger.debug(
                     f'Verifying email {form.cleaned_data["email"]} has a valid '
                     f'domain in {domains}'

@@ -25,6 +25,7 @@ class BaseCandidateForm(ModelForm):
             f'Verifying that "{email}" has a valid domain in the whitelist'
         )
 
+        email_whitelist = election.candidate_email_domain_whitelist.split()
         logger.debug(f'Whitelist: {email_whitelist}')
         email_domain = email.split('@')[1]
         logger.debug(f'Email domain to validate: {email_domain}')
